@@ -6,7 +6,6 @@ import java.util.List;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.prot.domain.DataStore;
@@ -30,6 +30,7 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 
 	private MyAdapter adapter;
 	private ActionBar actionBar;
+	private ProgressBar progressBar;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +46,15 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 		adapter = new MyAdapter(this, this);
 		listView.setAdapter(adapter);
 
+		 progressBar = (ProgressBar) findViewById(R.id.progressBar);
 		// DataStore.getInstance().getDataFromAssets(this, this);
 
 		DataStore.getInstance().refreshData(this);
+	}
+	
+	public void setProgressPercent(Integer percent)
+	{
+		progressBar.setProgress(percent);
 	}
 
 	@Override
@@ -58,56 +65,58 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem realSize = menu.findItem(R.id.action_image_size_real);
+		MenuItem sameSize = menu.findItem(R.id.action_image_same_size);
+
+		boolean makeSameImageSize = DataStore.getInstance().GetMakeSameImageSize();
+
+		sameSize.setVisible(!makeSameImageSize);
+		realSize.setVisible(makeSameImageSize);
+
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
 		switch (item.getItemId()) {
 		case R.id.action_refresh:
 			DataStore.getInstance().refreshData(this);
 			return true;
-	
-			
+
 		case R.id.action_image_size_real:
 			DataStore.getInstance().makeSameImageSize(false);
+			DataStore.getInstance().refreshData(this);
+			this.invalidateOptionsMenu();
 			return true;
+
 		case R.id.action_image_same_size:
 			DataStore.getInstance().makeSameImageSize(true);
+			DataStore.getInstance().refreshData(this);
+			this.invalidateOptionsMenu();
 			return true;
-			
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
-	// [[]] make all bitmaps same size?
-
 	private void setActionBar(Activity activity, final String title) {
 
 		actionBar = getActionBar();
-
 		actionBar.setHomeButtonEnabled(false);
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(false);
-		
-		
+
 		ColorDrawable colorDrawable = new ColorDrawable();
-		colorDrawable.setColor( getResources().getColor(R.color.darkBlue));
+		colorDrawable.setColor(getResources().getColor(R.color.lightBlue));
 		actionBar.setBackgroundDrawable(colorDrawable);
-        
-        
-		//actionBar.setBackgroundDrawable(new ColorDrawable(Color.BLUE));
-		// int titleId =
-		// getResources().getSystem().getIdentifier("action_bar_title", "id",
-		// "android");
-
-		// TextView tv = (TextView) findViewById(titleId);
-		// tv.setTextColor(Color.BLACK);
-
 		actionBar.setTitle(title);
 		actionBar.show();
-
 	}
 
-	static public class MyAdapter extends BaseAdapter {
+	private class MyAdapter extends BaseAdapter {
 
 		private List<FeedItem> items = new ArrayList<FeedItem>();
 		private Activity activity;
@@ -180,14 +189,12 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 				this.description = (TextView) row.findViewById(R.id.description);
 				this.title = (TextView) row.findViewById(R.id.title);
 				this.image = (ImageView) row.findViewById(R.id.image);
-
 			}
-
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			FeedItem node = getItem(position);
+			FeedItem item = getItem(position);
 
 			View view = null;
 			if (convertView == null) {
@@ -195,11 +202,6 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 				LayoutInflater inflater = activity.getLayoutInflater();
 				view = inflater.inflate(R.layout.feed_cell, null);
 				final ItemViewHolder viewHolder = new ItemViewHolder(view);
-
-				// viewHolder.description = (TextView)
-				// view.findViewById(R.id.description);
-				// viewHolder.title = (TextView) view.findViewById(R.id.title);
-				// viewHolder.image = (ImageView) view.findViewById(R.id.image);
 
 				viewHolder.image.setVisibility(View.GONE);
 
@@ -210,10 +212,10 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 			}
 			ItemViewHolder holder = (ItemViewHolder) view.getTag();
 
-			String title = node.getTitle();
+			String title = item.getTitle();
 			holder.title.setText(title);
 
-			String description = node.getDescription();
+			String description = item.getDescription();
 			holder.description.setText(description);
 
 			String urlName = items.get(position).getUrlName();
@@ -224,18 +226,20 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 				if (image != null) {
 					holder.image.setImageBitmap(image);
 					holder.image.setVisibility(View.VISIBLE);
+				} else {
+					// We could display a place holder image, as in code below,
+					// but it is kind of ugly
+					// so I removed it
+					// holder.image.setImageDrawable(getResources().getDrawable(R.drawable.icon_btn_social));
+					// holder.image.setVisibility(View.VISIBLE);
 				}
-
 			}
 			return view;
-
 		}
-
 	}
 
 	@Override
-	public void processNewData(List<FeedItem> newItems, String newTitle) 
-	{
+	public void processNewData(List<FeedItem> newItems, String newTitle) {
 
 		actionBar.setTitle(newTitle);
 		adapter.SetItems(newItems);

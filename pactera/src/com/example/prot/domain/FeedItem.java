@@ -51,4 +51,9 @@ public class FeedItem {
 
 		return (title == null || title.isEmpty()) && (description == null || description.isEmpty()) && (urlName == null || urlName.isEmpty());
 	}
+
+	public boolean HasImage() {
+		
+		return (urlName != null && !urlName.isEmpty() );
+	}
 }

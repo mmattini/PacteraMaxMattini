@@ -179,14 +179,15 @@ public final class R {
         public static final int icon_btn_transfer=0x7f020004;
     }
     public static final class id {
-        public static final int action_image_same_size=0x7f090006;
-        public static final int action_image_size_real=0x7f090007;
-        public static final int action_refresh=0x7f090005;
-        public static final int arrow=0x7f090001;
-        public static final int description=0x7f090003;
-        public static final int image=0x7f090004;
-        public static final int listView=0x7f090000;
-        public static final int title=0x7f090002;
+        public static final int action_image_same_size=0x7f090007;
+        public static final int action_image_size_real=0x7f090008;
+        public static final int action_refresh=0x7f090006;
+        public static final int arrow=0x7f090002;
+        public static final int description=0x7f090004;
+        public static final int image=0x7f090005;
+        public static final int listView=0x7f090001;
+        public static final int progressBar=0x7f090000;
+        public static final int title=0x7f090003;
     }
     public static final class layout {
         public static final int activity_pactera=0x7f030000;

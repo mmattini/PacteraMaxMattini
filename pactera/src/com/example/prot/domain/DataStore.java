@@ -26,7 +26,8 @@ public class DataStore {
 
 	private static final String LOG_TAG = DataStore.class.getSimpleName();
 	private static DataStore _instance;
-
+	private int progressCount=0;
+	
 	public static DataStore getInstance() {
 		if (_instance == null) {
 			_instance = new DataStore();
@@ -34,6 +35,9 @@ public class DataStore {
 		return _instance;
 	}
 
+	final int READ_TIMEOUT_MS = 10000;
+	final int CONNECTION_TIMEOUT_MS = 10000;
+	private boolean makeSameImageSize = false;
 	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
 	private String feedTitle;
 	private final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
@@ -62,6 +66,7 @@ public class DataStore {
 			reader.setLenient(true);// [[]]
 			parseData(reader);
 
+			progressCount = 0;
 			listener.processNewData(feedItems, feedTitle);
 
 		} catch (UnsupportedEncodingException e) {
@@ -80,6 +85,16 @@ public class DataStore {
 				}
 			}
 		}
+	}
+
+	private int getImageCount() {
+		int count = 0;
+		for(FeedItem item: feedItems){
+			if(item.HasImage()){
+				count++;
+			}
+		}
+		return count;
 	}
 
 	private void resetData() {
@@ -175,6 +190,7 @@ public class DataStore {
 
 		private IDataReadyListener listener;
 
+
 		DownloadDataTask(IDataReadyListener listener) {
 			this.listener = listener;
 		}
@@ -188,9 +204,12 @@ public class DataStore {
 			bitmapMap.clear();
 			urlToLoad.clear();
 
+			progressCount = 0;
 			listener.processNewData(feedItems, feedTitle);
 		}
 
+		
+		
 		// [[]] use better thread pool
 		@Override
 		protected Void doInBackground(String... params) {
@@ -228,12 +247,9 @@ public class DataStore {
 		}
 	}
 
-	final int READ_TIMEOUT_MS = 10000;
-	final int CONNECTION_TIMEOUT_MS = 10000;
-	private boolean makeSameImageSize = false;
-
+	
 	// [[]] change timeout to speed up
-	protected InputStream downloadUrl(String urlString) throws IOException {
+	private InputStream downloadUrl(String urlString) throws IOException {
 		URL url = new URL(urlString);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setReadTimeout(READ_TIMEOUT_MS /* milliseconds */);
@@ -259,7 +275,7 @@ public class DataStore {
 		new DownloadDataTask(listener).execute(WEBSITE_URL);
 	}
 
-	private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+	private class DownloadImageTask extends AsyncTask<String, Integer, Bitmap> {
 
 		String urlName = null;// [[]]xp
 
@@ -275,22 +291,26 @@ public class DataStore {
 			return getBitmapFromURL(urlName);
 		}
 
+		protected void onProgressUpdate(Integer... progress) {
+	         listener.setProgressPercent(progress[0]);
+	     }
+
 		// [[]] todo remove all system
 		protected void onPostExecute(Bitmap bitmap) {
-			System.out.println("Downloaded " + urlName);
-
+			
 			if (bitmap != null) {
+				Log.d(LOG_TAG, "Downloaded bitmap from " + urlName);
 				DataStore.getInstance().setResults(listener, urlName, bitmap);
 			}
 		}
 
-		public Bitmap getBitmapFromURL(String src) {
+		public Bitmap getBitmapFromURL(String urlName) {
 			try {
-				URL url = new URL(src);
+				URL url = new URL(urlName);
 				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
-				connection.setConnectTimeout(10000);// [[]]
-				connection.setReadTimeout(10000);
+				connection.setConnectTimeout(CONNECTION_TIMEOUT_MS);// [[]]
+				connection.setReadTimeout(READ_TIMEOUT_MS);
 				connection.connect();
 				InputStream input = connection.getInputStream();
 				Bitmap myBitmap = BitmapFactory.decodeStream(input);
@@ -300,25 +320,20 @@ public class DataStore {
 				}
 				return myBitmap;
 			} catch (MalformedURLException e) {
+				Log.e(LOG_TAG, "MalformedURLException error " + e.getMessage());
 				return null;
 			} catch (IOException e) {
-				// Log exception
+				Log.e(LOG_TAG, "IOException error " + e.getMessage());
 				return null;
+			} finally {
+				progressCount++;
+				Log.i(LOG_TAG, "progress " + progressCount + " of " + getImageCount());
+				publishProgress(progressCount*100 /getImageCount());
+				
 			}
 		}
 
-		private Bitmap getBitmapDownloaded(String url) {
-
-			Bitmap bitmap = null;
-			try {
-				bitmap = BitmapFactory.decodeStream((InputStream) new URL(url).getContent());
-				// bitmap = getResizedBitmap(bitmap, 150, 250);
-				return bitmap;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return bitmap;
-		}
+		
 
 		/** [[]] decodes image and scales it to reduce memory consumption **/
 		public Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
@@ -338,13 +353,17 @@ public class DataStore {
 
 	public Bitmap lazyGetBitmap(IDataReadyListener listener, String urlName) {
 		if (bitmapMap.containsKey(urlName)) {
-			Bitmap b = DataStore.getInstance().bitmapMap.get(urlName);
-			return b;
-		} else if (urlToLoad.contains(urlName)) {
-
+			// Great the image has been downloaded
+			
+			return bitmapMap.get(urlName);
+		} 
+		
+		if (urlToLoad.contains(urlName)) {
+			// Do nothing as the download is in progress
 		} else {
 
-			DataStore.getInstance().urlToLoad.add(urlName);// [[]] sync
+			// Need to download the image
+			urlToLoad.add(urlName);
 			new DownloadImageTask(listener).execute(urlName);
 
 		}
@@ -354,6 +373,11 @@ public class DataStore {
 	public void makeSameImageSize(boolean b) {
 		makeSameImageSize = b;
 
+	}
+
+	public boolean GetMakeSameImageSize() {
+		
+		return makeSameImageSize;
 	}
 
 }
