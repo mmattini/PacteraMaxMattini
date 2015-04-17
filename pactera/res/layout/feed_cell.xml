@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+     >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/arrow"
+        android:layout_marginRight="@dimen/hMargin"
+        android:layout_marginLeft="@dimen/hMargin"
+        android:layout_marginBottom="@dimen/vMargin"
+        android:layout_marginTop="@dimen/vMargin"
+        android:background="@color/yellow"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/red"
+            android:gravity="left"
+            android:scrollHorizontally="false"
+            android:singleLine="false"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"
+             android:layout_marginBottom="5dip"
+            android:textStyle="bold" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+             >
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                
+                android:layout_toLeftOf="@+id/image"
+                android:background="@color/LightCyan"
+                android:singleLine="false"
+                android:textColor="@color/SkyBlue"
+                                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="false"
+                android:contentDescription="@string/TODO"
+                android:scaleType="centerInside"
+                android:src="@drawable/icon_btn_transfer"
+                android:visibility="visible" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/arrow"
+        android:layout_width="@dimen/hMargin"
+        android:layout_height="20dip"
+        android:background="@color/red"
+        android:layout_marginRight="@dimen/hMargin"
+        android:layout_marginLeft="0dip"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/TODO"
+        android:src="@drawable/arrow_right_dark"
+        android:visibility="visible" />
+
+</RelativeLayout>

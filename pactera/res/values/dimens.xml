@@ -1,0 +1,14 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    
+    
+    <dimen name="hMargin">10dip</dimen>
+    <dimen name="vMargin">10dip</dimen>
+    
+    
+    <dimen name="h2Margin">20dip</dimen>
+    <dimen name="v2Margin">20dip</dimen>
+    
+
+</resources>
