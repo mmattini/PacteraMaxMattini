@@ -1,3 +1,7 @@
 junit for json
 
 // [[]] make all bitmaps same size?
+
+progress dialog
+
+add image place holder

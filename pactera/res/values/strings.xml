@@ -3,6 +3,8 @@
 
     <string name="app_name">Pactera</string>
     <string name="action_refresh">Refresh</string>
+     <string name="action_image_same_size">Same Size Images</string>
+       <string name="action_image_size_real">Real Size Images</string>
     <string name="TODO">TODO</string>
 
 </resources>

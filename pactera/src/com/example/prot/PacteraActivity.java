@@ -64,7 +64,15 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 		case R.id.action_refresh:
 			DataStore.getInstance().refreshData(this);
 			return true;
-
+	
+			
+		case R.id.action_image_size_real:
+			DataStore.getInstance().makeSameImageSize(false);
+			return true;
+		case R.id.action_image_same_size:
+			DataStore.getInstance().makeSameImageSize(true);
+			return true;
+			
 		default:
 			return super.onOptionsItemSelected(item);
 		}

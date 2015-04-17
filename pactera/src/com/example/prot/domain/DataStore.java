@@ -37,9 +37,8 @@ public class DataStore {
 	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
 	private String feedTitle;
 	private final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
-	
-	
-	//[[]] add note about conncurency
+
+	// [[]] add note about conncurency
 	private ConcurrentMap<String, Bitmap> bitmapMap = new ConcurrentHashMap<String, Bitmap>();
 	private CopyOnWriteArrayList<String> urlToLoad = new CopyOnWriteArrayList<String>();
 
@@ -231,6 +230,7 @@ public class DataStore {
 
 	final int READ_TIMEOUT_MS = 10000;
 	final int CONNECTION_TIMEOUT_MS = 10000;
+	private boolean makeSameImageSize = false;
 
 	// [[]] change timeout to speed up
 	protected InputStream downloadUrl(String urlString) throws IOException {
@@ -275,6 +275,7 @@ public class DataStore {
 			return getBitmapFromURL(urlName);
 		}
 
+		// [[]] todo remove all system
 		protected void onPostExecute(Bitmap bitmap) {
 			System.out.println("Downloaded " + urlName);
 
@@ -288,11 +289,15 @@ public class DataStore {
 				URL url = new URL(src);
 				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
-				connection.setConnectTimeout(10000);
+				connection.setConnectTimeout(10000);// [[]]
 				connection.setReadTimeout(10000);
 				connection.connect();
 				InputStream input = connection.getInputStream();
 				Bitmap myBitmap = BitmapFactory.decodeStream(input);
+
+				if (makeSameImageSize) {
+					myBitmap = getResizedBitmap(myBitmap, 240, 320);
+				}
 				return myBitmap;
 			} catch (MalformedURLException e) {
 				return null;
@@ -344,6 +349,11 @@ public class DataStore {
 
 		}
 		return null;
+	}
+
+	public void makeSameImageSize(boolean b) {
+		makeSameImageSize = b;
+
 	}
 
 }
