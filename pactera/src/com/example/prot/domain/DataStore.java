@@ -25,17 +25,26 @@ import android.util.Log;
 public class DataStore {
 
 	private static final String LOG_TAG = DataStore.class.getSimpleName();
-	private static final int READ_TIMEOUT_MS = 10000;
-	private static final int CONNECTION_TIMEOUT_MS = 10000;
-	private static final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
 
+	// Some of the images (e.g
+	// http://images.findicons.com/files/icons/662/world_flag/128/flag_of_canada.png)
+	// will result in
+	// connection timeout. For this reason, the timeout is set to 10 seconds
+	// instead of default 30 seconds
+	private static final int CONNECTION_TIMEOUT_MS = 10000;
+	private static final int READ_TIMEOUT_MS = 10000;
+
+	private static final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
 	private static DataStore _instance;
 	private int progressCount = 0;
 	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
 	private String feedTitle;
 	private boolean makeSameImageSize = false;
 
-	// [[]] add note about conncurency
+	// Initially, all requests to download images are added to the imagesPending
+	// list. As
+	// images are being downloaded, they are put into the imagesCache.
+	// Need to provide concurrency as different threads can access them.
 	private ConcurrentMap<String, Bitmap> imagesCache = new ConcurrentHashMap<String, Bitmap>();
 	private CopyOnWriteArrayList<String> imagesPending = new CopyOnWriteArrayList<String>();
 
@@ -46,7 +55,11 @@ public class DataStore {
 		return _instance;
 	}
 
-	// [[]] used in unit tests
+	/**
+	 * This method is used in testing [[]]
+	 * @param context
+	 * @param listener
+	 */
 	public void getDataFromAssets(Context context, IDataReadyListener listener) {
 
 		if (!feedItems.isEmpty()) {
@@ -63,7 +76,7 @@ public class DataStore {
 
 			// 2) Parse JSon
 			reader = new JsonReader(new InputStreamReader(is, "UTF-8"));
-			reader.setLenient(true);// [[]]
+			reader.setLenient(true);
 			parseData(reader);
 
 			progressCount = 0;
@@ -87,6 +100,10 @@ public class DataStore {
 		}
 	}
 
+	/**
+	 * 
+	 * @return number of images (image url exists) in the feed
+	 */
 	public int getImageCount() {
 		int count = 0;
 		for (FeedItem item : feedItems) {
@@ -109,9 +126,8 @@ public class DataStore {
 		while (reader.hasNext()) {
 			String name = reader.nextName();
 			if ("title".equalsIgnoreCase(name)) {
-				// [[]] peek affect perfo
-				JsonToken peek = reader.peek();
-				if (peek == JsonToken.NULL) {
+
+				if (reader.peek() == JsonToken.NULL) {
 					reader.skipValue();
 					feedTitle = "";
 				} else {
@@ -144,27 +160,26 @@ public class DataStore {
 
 		while (reader.hasNext()) {
 			String name = reader.nextName();
-			// Log.i(LOG_TAG, name);
 
 			if ("description".equalsIgnoreCase(name)) {
-				JsonToken peek = reader.peek();
-				if (peek == JsonToken.NULL) {
+
+				if (reader.peek() == JsonToken.NULL) {
 					reader.skipValue();
 					feedItem.setDescription("");
 				} else {
 					feedItem.setDescription(reader.nextString());
 				}
 			} else if ("title".equalsIgnoreCase(name)) {
-				JsonToken peek = reader.peek();
-				if (peek == JsonToken.NULL) {
+
+				if (reader.peek() == JsonToken.NULL) {
 					reader.skipValue();
 					feedItem.setTitle("");
 				} else {
 					feedItem.setTitle(reader.nextString());
 				}
 			} else if ("imageHref".equalsIgnoreCase(name)) {
-				JsonToken peek = reader.peek();
-				if (peek == JsonToken.NULL) {
+
+				if (reader.peek() == JsonToken.NULL) {
 					reader.skipValue();
 					feedItem.setUrlName("");
 				} else {
@@ -176,11 +191,12 @@ public class DataStore {
 			}
 		}
 
+		// Remove bad items with no data in them
 		if (!feedItem.IsNullOrEmpty()) {
 			feedItems.add(feedItem);
-			Log.i(LOG_TAG, feedItem.toString());
+			// Log.d(LOG_TAG, feedItem.toString());
 		} else {
-			Log.i(LOG_TAG, "Empty row -> discarded");
+			Log.d(LOG_TAG, "Empty row -> discarded");
 		}
 
 		reader.endObject();
@@ -215,7 +231,6 @@ public class DataStore {
 			InputStream is = null;
 			JsonReader reader = null;
 			try {
-
 				is = downloadUrl(url);
 
 				// 2) Parse JSon
@@ -327,11 +342,12 @@ public class DataStore {
 				if (imageCount > 0) {
 					int percent = (progressCount * 100) / imageCount;
 					Log.d(LOG_TAG, "progress " + progressCount + " of " + imageCount);
-					if(percent <= 2){
-						// Minimum progress is 2 % to make it easier for the user to see 
+					if (percent <= 2) {
+						// Minimum progress is 2 % to make it easier for the
+						// user to see
 						percent = 2;
 					}
-					publishProgress( percent);
+					publishProgress(percent);
 				}
 
 			}
@@ -353,6 +369,15 @@ public class DataStore {
 		}
 	}
 
+	/**
+	 * Try to find image in cache. If not, try to download it. However, before
+	 * downloading an image make sure it is not in the pending list as we don't
+	 * want top download an image twice or more
+	 * 
+	 * @param listener listener will be called when the image is downloaded to refresh display
+	 * @param urlName url of the image
+	 * @return null if the image is not in the cache, otherwise return the bitmap image
+	 */
 	public Bitmap lazyGetBitmap(IDataReadyListener listener, String urlName) {
 		if (imagesCache.containsKey(urlName)) {
 			// Great the image has been downloaded
