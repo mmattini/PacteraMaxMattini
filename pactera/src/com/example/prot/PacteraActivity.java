@@ -31,7 +31,7 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 	private MyAdapter adapter;
 	private ActionBar actionBar;
 	private ProgressBar progressBar;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
@@ -46,15 +46,28 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 		adapter = new MyAdapter(this, this);
 		listView.setAdapter(adapter);
 
-		 progressBar = (ProgressBar) findViewById(R.id.progressBar);
-		// DataStore.getInstance().getDataFromAssets(this, this);
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-		DataStore.getInstance().refreshData(this);
+		boolean initFromAssets = true;
+		
+		if (initFromAssets) {
+			startProgress();
+			DataStore.getInstance().getDataFromAssets(this, this);
+		} else {
+			refreshData();
+		}
 	}
-	
-	public void setProgressPercent(Integer percent)
-	{
+
+	private void startProgress() {
+		progressBar.setProgress(1);
+		progressBar.setVisibility(View.VISIBLE);
+	}
+
+	public void setProgressPercent(Integer percent) {
 		progressBar.setProgress(percent);
+		if(percent >= 100){
+			progressBar.setVisibility(View.GONE);
+		}
 	}
 
 	@Override
@@ -82,24 +95,29 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 
 		switch (item.getItemId()) {
 		case R.id.action_refresh:
-			DataStore.getInstance().refreshData(this);
+			refreshData();
 			return true;
 
 		case R.id.action_image_size_real:
 			DataStore.getInstance().makeSameImageSize(false);
-			DataStore.getInstance().refreshData(this);
+			refreshData();
 			this.invalidateOptionsMenu();
 			return true;
 
 		case R.id.action_image_same_size:
 			DataStore.getInstance().makeSameImageSize(true);
-			DataStore.getInstance().refreshData(this);
+			refreshData();
 			this.invalidateOptionsMenu();
 			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void refreshData() {
+		startProgress();
+		DataStore.getInstance().refreshData(this);
 	}
 
 	private void setActionBar(Activity activity, final String title) {

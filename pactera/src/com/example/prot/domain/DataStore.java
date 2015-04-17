@@ -26,7 +26,9 @@ public class DataStore {
 
 	private static final String LOG_TAG = DataStore.class.getSimpleName();
 	private static DataStore _instance;
-	private int progressCount=0;
+	private int progressCount = 0;
+	final int READ_TIMEOUT_MS = 10000;
+	final int CONNECTION_TIMEOUT_MS = 10000;
 	
 	public static DataStore getInstance() {
 		if (_instance == null) {
@@ -35,8 +37,7 @@ public class DataStore {
 		return _instance;
 	}
 
-	final int READ_TIMEOUT_MS = 10000;
-	final int CONNECTION_TIMEOUT_MS = 10000;
+	
 	private boolean makeSameImageSize = false;
 	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
 	private String feedTitle;
@@ -47,7 +48,7 @@ public class DataStore {
 	private CopyOnWriteArrayList<String> urlToLoad = new CopyOnWriteArrayList<String>();
 
 	// [[]] unit tests
-	void getDataFromAssets(Context context, IDataReadyListener listener) {
+	public void getDataFromAssets(Context context, IDataReadyListener listener) {
 
 		if (!feedItems.isEmpty()) {
 			return;
