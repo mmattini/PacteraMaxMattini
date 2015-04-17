@@ -25,7 +25,6 @@ import android.util.Log;
 public class DataStore {
 
 	private static final String LOG_TAG = DataStore.class.getSimpleName();
-
 	private static DataStore _instance;
 
 	public static DataStore getInstance() {
@@ -38,14 +37,15 @@ public class DataStore {
 	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
 	private String feedTitle;
 	private final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
+	
+	
+	//[[]] add note about conncurency
 	private ConcurrentMap<String, Bitmap> bitmapMap = new ConcurrentHashMap<String, Bitmap>();
 	private CopyOnWriteArrayList<String> urlToLoad = new CopyOnWriteArrayList<String>();
 
 	// [[]] unit tests
 	void getDataFromAssets(Context context, IDataReadyListener listener) {
 
-		// Since data is static from a file, do not parse it again if already
-		// done
 		if (!feedItems.isEmpty()) {
 			return;
 		}
@@ -87,9 +87,7 @@ public class DataStore {
 		synchronized (this) {
 			feedTitle = "";
 			feedItems.clear();
-
 		}
-
 	}
 
 	private void parseData(JsonReader reader) throws IOException {
@@ -174,13 +172,12 @@ public class DataStore {
 		reader.endObject();
 	}
 
-	private class DownloadRenameTask extends AsyncTask<String, Integer, Void> {
+	private class DownloadDataTask extends AsyncTask<String, Integer, Void> {
 
 		private IDataReadyListener listener;
 
-		DownloadRenameTask(IDataReadyListener listener) {
+		DownloadDataTask(IDataReadyListener listener) {
 			this.listener = listener;
-
 		}
 
 		@Override

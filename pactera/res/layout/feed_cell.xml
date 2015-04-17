@@ -16,18 +16,19 @@
         android:layout_marginLeft="@dimen/hMargin"
         android:layout_marginBottom="@dimen/vMargin"
         android:layout_marginTop="@dimen/vMargin"
-        android:background="@color/yellow"
+       
         android:orientation="vertical" >
 
         <TextView
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/red"
+           
             android:gravity="left"
+           
             android:scrollHorizontally="false"
             android:singleLine="false"
-            android:textColor="@android:color/black"
+            android:textColor="@color/darkBlue"
             android:textSize="15sp"
              android:layout_marginBottom="5dip"
             android:textStyle="bold" />
@@ -44,12 +45,12 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
-                
+                 android:paddingRight="5dip"
                 android:layout_toLeftOf="@+id/image"
-                android:background="@color/LightCyan"
+                
                 android:singleLine="false"
-                android:textColor="@color/SkyBlue"
-                                android:textSize="14sp" />
+                android:textColor="@color/black"
+                android:textSize="14sp" />
 
             <ImageView
                 android:id="@+id/image"
@@ -68,9 +69,9 @@
 
     <ImageView
         android:id="@+id/arrow"
-        android:layout_width="@dimen/hMargin"
-        android:layout_height="20dip"
-        android:background="@color/red"
+        android:layout_width="12dip"
+        android:layout_height="23dip"
+       
         android:layout_marginRight="@dimen/hMargin"
         android:layout_marginLeft="0dip"
         android:layout_alignParentRight="true"
