@@ -25,11 +25,20 @@ import android.util.Log;
 public class DataStore {
 
 	private static final String LOG_TAG = DataStore.class.getSimpleName();
+	private static final int READ_TIMEOUT_MS = 10000;
+	private static final int CONNECTION_TIMEOUT_MS = 10000;
+	private static final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
+
 	private static DataStore _instance;
 	private int progressCount = 0;
-	final int READ_TIMEOUT_MS = 10000;
-	final int CONNECTION_TIMEOUT_MS = 10000;
-	
+	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
+	private String feedTitle;
+	private boolean makeSameImageSize = false;
+
+	// [[]] add note about conncurency
+	private ConcurrentMap<String, Bitmap> imagesCache = new ConcurrentHashMap<String, Bitmap>();
+	private CopyOnWriteArrayList<String> imagesPending = new CopyOnWriteArrayList<String>();
+
 	public static DataStore getInstance() {
 		if (_instance == null) {
 			_instance = new DataStore();
@@ -37,17 +46,7 @@ public class DataStore {
 		return _instance;
 	}
 
-	
-	private boolean makeSameImageSize = false;
-	private List<FeedItem> feedItems = new ArrayList<FeedItem>();
-	private String feedTitle;
-	private final String WEBSITE_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
-
-	// [[]] add note about conncurency
-	private ConcurrentMap<String, Bitmap> bitmapMap = new ConcurrentHashMap<String, Bitmap>();
-	private CopyOnWriteArrayList<String> urlToLoad = new CopyOnWriteArrayList<String>();
-
-	// [[]] unit tests
+	// [[]] used in unit tests
 	public void getDataFromAssets(Context context, IDataReadyListener listener) {
 
 		if (!feedItems.isEmpty()) {
@@ -88,10 +87,10 @@ public class DataStore {
 		}
 	}
 
-	private int getImageCount() {
+	public int getImageCount() {
 		int count = 0;
-		for(FeedItem item: feedItems){
-			if(item.HasImage()){
+		for (FeedItem item : feedItems) {
+			if (item.HasImage()) {
 				count++;
 			}
 		}
@@ -191,7 +190,6 @@ public class DataStore {
 
 		private IDataReadyListener listener;
 
-
 		DownloadDataTask(IDataReadyListener listener) {
 			this.listener = listener;
 		}
@@ -202,15 +200,13 @@ public class DataStore {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			bitmapMap.clear();
-			urlToLoad.clear();
+			imagesCache.clear();
+			imagesPending.clear();
 
 			progressCount = 0;
 			listener.processNewData(feedItems, feedTitle);
 		}
 
-		
-		
 		// [[]] use better thread pool
 		@Override
 		protected Void doInBackground(String... params) {
@@ -248,7 +244,6 @@ public class DataStore {
 		}
 	}
 
-	
 	// [[]] change timeout to speed up
 	private InputStream downloadUrl(String urlString) throws IOException {
 		URL url = new URL(urlString);
@@ -264,9 +259,9 @@ public class DataStore {
 	}
 
 	private void setResults(IDataReadyListener listener, String urlName, Bitmap result) {
-		urlToLoad.remove(urlName);
+		imagesPending.remove(urlName);
 		// [[]]xp handle error
-		DataStore.getInstance().bitmapMap.put(urlName, result);
+		DataStore.getInstance().imagesCache.put(urlName, result);
 		listener.notifyDataSetChanged();
 
 	}
@@ -293,12 +288,12 @@ public class DataStore {
 		}
 
 		protected void onProgressUpdate(Integer... progress) {
-	         listener.setProgressPercent(progress[0]);
-	     }
+			listener.setProgressPercent(progress[0]);
+		}
 
 		// [[]] todo remove all system
 		protected void onPostExecute(Bitmap bitmap) {
-			
+
 			if (bitmap != null) {
 				Log.d(LOG_TAG, "Downloaded bitmap from " + urlName);
 				DataStore.getInstance().setResults(listener, urlName, bitmap);
@@ -328,13 +323,14 @@ public class DataStore {
 				return null;
 			} finally {
 				progressCount++;
-				Log.i(LOG_TAG, "progress " + progressCount + " of " + getImageCount());
-				publishProgress(progressCount*100 /getImageCount());
-				
+				int imageCount = getImageCount();
+				if (imageCount > 0) {
+					Log.d(LOG_TAG, "progress " + progressCount + " of " + imageCount);
+					publishProgress( (progressCount * 100) / imageCount);
+				}
+
 			}
 		}
-
-		
 
 		/** [[]] decodes image and scales it to reduce memory consumption **/
 		public Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
@@ -353,18 +349,18 @@ public class DataStore {
 	}
 
 	public Bitmap lazyGetBitmap(IDataReadyListener listener, String urlName) {
-		if (bitmapMap.containsKey(urlName)) {
+		if (imagesCache.containsKey(urlName)) {
 			// Great the image has been downloaded
-			
-			return bitmapMap.get(urlName);
-		} 
-		
-		if (urlToLoad.contains(urlName)) {
+
+			return imagesCache.get(urlName);
+		}
+
+		if (imagesPending.contains(urlName)) {
 			// Do nothing as the download is in progress
 		} else {
 
-			// Need to download the image
-			urlToLoad.add(urlName);
+			// Need to download the image: insert it in the pending images list.
+			imagesPending.add(urlName);
 			new DownloadImageTask(listener).execute(urlName);
 
 		}
@@ -377,7 +373,7 @@ public class DataStore {
 	}
 
 	public boolean GetMakeSameImageSize() {
-		
+
 		return makeSameImageSize;
 	}
 

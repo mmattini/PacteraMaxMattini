@@ -48,7 +48,7 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-		boolean initFromAssets = true;
+		boolean initFromAssets = false;
 		
 		if (initFromAssets) {
 			startProgress();
@@ -261,6 +261,12 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 
 		actionBar.setTitle(newTitle);
 		adapter.SetItems(newItems);
+		
+		
+		// This is rare to happen but if we have no image at all we need to dismiss progress bar
+		if(DataStore.getInstance().getImageCount() == 0){
+			setProgressPercent(100);
+		}
 	}
 
 	@Override
