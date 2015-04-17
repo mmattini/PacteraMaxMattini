@@ -256,7 +256,7 @@ public class DataStore {
 
 	public void refreshData(IDataReadyListener listener) {
 		resetData();
-		new DownloadRenameTask(listener).execute(WEBSITE_URL);
+		new DownloadDataTask(listener).execute(WEBSITE_URL);
 	}
 
 	private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {

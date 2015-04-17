@@ -29,7 +29,8 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 	protected static final String LOG_TAG = PacteraActivity.class.getSimpleName();
 
 	private MyAdapter adapter;
-
+	private ActionBar actionBar;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
@@ -71,13 +72,6 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 
 	// [[]] make all bitmaps same size?
 
-	
-		
-
-
-
-	private ActionBar actionBar;
-
 	private void setActionBar(Activity activity, final String title) {
 
 		actionBar = getActionBar();
@@ -85,10 +79,14 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 		actionBar.setHomeButtonEnabled(false);
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(false);
-		// actionBar.setDisplayUseLogoEnabled(true);
-
-		// actionBar.setIcon(R.drawable.icon_welcome_logo);
-		actionBar.setBackgroundDrawable(new ColorDrawable(Color.BLUE));
+		
+		
+		ColorDrawable colorDrawable = new ColorDrawable();
+		colorDrawable.setColor( getResources().getColor(R.color.darkBlue));
+		actionBar.setBackgroundDrawable(colorDrawable);
+        
+        
+		//actionBar.setBackgroundDrawable(new ColorDrawable(Color.BLUE));
 		// int titleId =
 		// getResources().getSystem().getIdentifier("action_bar_title", "id",
 		// "android");
