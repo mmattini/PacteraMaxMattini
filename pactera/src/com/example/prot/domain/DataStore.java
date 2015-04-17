@@ -325,8 +325,13 @@ public class DataStore {
 				progressCount++;
 				int imageCount = getImageCount();
 				if (imageCount > 0) {
+					int percent = (progressCount * 100) / imageCount;
 					Log.d(LOG_TAG, "progress " + progressCount + " of " + imageCount);
-					publishProgress( (progressCount * 100) / imageCount);
+					if(percent <= 2){
+						// Minimum progress is 2 % to make it easier for the user to see 
+						percent = 2;
+					}
+					publishProgress( percent);
 				}
 
 			}

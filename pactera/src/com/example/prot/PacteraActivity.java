@@ -59,7 +59,7 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 	}
 
 	private void startProgress() {
-		progressBar.setProgress(1);
+		progressBar.setProgress(2);
 		progressBar.setVisibility(View.VISIBLE);
 	}
 
