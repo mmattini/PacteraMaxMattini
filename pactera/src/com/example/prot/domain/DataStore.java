@@ -223,7 +223,7 @@ public class DataStore {
 			listener.processNewData(feedItems, feedTitle);
 		}
 
-		// [[]] use better thread pool
+		
 		@Override
 		protected Void doInBackground(String... params) {
 			String url = params[0];
@@ -259,7 +259,7 @@ public class DataStore {
 		}
 	}
 
-	// [[]] change timeout to speed up
+	
 	private InputStream downloadUrl(String urlString) throws IOException {
 		URL url = new URL(urlString);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -275,7 +275,7 @@ public class DataStore {
 
 	private void setResults(IDataReadyListener listener, String urlName, Bitmap result) {
 		imagesPending.remove(urlName);
-		// [[]]xp handle error
+		
 		DataStore.getInstance().imagesCache.put(urlName, result);
 		listener.notifyImageDownloaded(urlName);
 
@@ -288,7 +288,7 @@ public class DataStore {
 
 	private class DownloadImageTask extends AsyncTask<String, Integer, Bitmap> {
 
-		String urlName = null;// [[]]xp
+		String urlName = null;
 
 		IDataReadyListener listener;
 
@@ -320,7 +320,7 @@ public class DataStore {
 				URL url = new URL(urlName);
 				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 				connection.setDoInput(true);
-				connection.setConnectTimeout(CONNECTION_TIMEOUT_MS);// [[]]
+				connection.setConnectTimeout(CONNECTION_TIMEOUT_MS);
 				connection.setReadTimeout(READ_TIMEOUT_MS);
 				connection.connect();
 				InputStream input = connection.getInputStream();
@@ -353,8 +353,8 @@ public class DataStore {
 			}
 		}
 
-		/** [[]] decodes image and scales it to reduce memory consumption **/
-		public Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
+		/* Decodes image and scales it to reduce memory consumption. Used only if setting requires all images to be of teh same size */
+		private Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
 			int width = bm.getWidth();
 			int height = bm.getHeight();
 			float scaleWidth = ((float) newWidth) / width;
