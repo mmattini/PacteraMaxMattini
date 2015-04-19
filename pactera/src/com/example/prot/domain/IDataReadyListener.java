@@ -4,9 +4,22 @@ import java.util.List;
 
 public interface IDataReadyListener {
 
-	void processNewData(List<FeedItem> items, String newTitle);
+	/**
+	 * Called when feed items and title are available
+	 * @param items feed items
+	 * @param title feed title
+	 */
+	void processNewData(List<FeedItem> items, String title);
 	
-	void notifyDataSetChanged();
+	/**
+	 * Called when image finished downloading
+	 * @param imageUrl
+	 */
+	void notifyImageDownloaded(String imageUrl);
 
+	/**
+	 * Report overall image download  
+	 * @param percent percent of images have been downloaded
+	 */
 	void setProgressPercent(Integer percent);
 }

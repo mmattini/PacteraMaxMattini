@@ -270,7 +270,7 @@ public class PacteraActivity extends Activity implements IDataReadyListener {
 	}
 
 	@Override
-	public void notifyDataSetChanged() {
+	public void notifyImageDownloaded(String urlName) {
 		adapter.notifyDataSetChanged();
 	}
 

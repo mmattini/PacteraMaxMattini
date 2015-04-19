@@ -56,7 +56,7 @@ public class DataStore {
 	}
 
 	/**
-	 * This method is used in testing [[]]
+	 * This method is used in Android Test Unit 
 	 * @param context
 	 * @param listener
 	 */
@@ -235,7 +235,7 @@ public class DataStore {
 
 				// 2) Parse JSon
 				reader = new JsonReader(new InputStreamReader(is, "UTF-8"));
-				reader.setLenient(true);// [[]]
+				reader.setLenient(true);
 				parseData(reader);
 
 			} catch (UnsupportedEncodingException e) {
@@ -277,7 +277,7 @@ public class DataStore {
 		imagesPending.remove(urlName);
 		// [[]]xp handle error
 		DataStore.getInstance().imagesCache.put(urlName, result);
-		listener.notifyDataSetChanged();
+		listener.notifyImageDownloaded(urlName);
 
 	}
 
@@ -306,7 +306,7 @@ public class DataStore {
 			listener.setProgressPercent(progress[0]);
 		}
 
-		// [[]] todo remove all system
+		
 		protected void onPostExecute(Bitmap bitmap) {
 
 			if (bitmap != null) {
