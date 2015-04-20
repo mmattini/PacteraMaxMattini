@@ -56,7 +56,6 @@ public class TestJson extends AndroidTestCase {
 	}
 
 	public void testItemParsedCorrectly() {
-
 		DataReadyListener dataReadyListener = null;
 		dataReadyListener = new DataReadyListener();
 		DataStore.getInstance().getDataFromAssets(getContext(), dataReadyListener);
