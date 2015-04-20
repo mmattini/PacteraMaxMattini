@@ -10,7 +10,7 @@ import com.example.prot.domain.IDataReadyListener;
 
 public class TestJson extends AndroidTestCase {
 
-	private DataReadyListener dataReadyListener = null;
+	
 
 	private class DataReadyListener implements IDataReadyListener {
 		public List<FeedItem> items;
@@ -45,6 +45,19 @@ public class TestJson extends AndroidTestCase {
 
 		super.setUp();
 
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+
+		super.tearDown();
+
+		//dataReadyListener = null;
+	}
+
+	public void testItemParsedCorrectly() {
+
+		DataReadyListener dataReadyListener = null;
 		dataReadyListener = new DataReadyListener();
 		DataStore.getInstance().getDataFromAssets(getContext(), dataReadyListener);
 
@@ -56,17 +69,7 @@ public class TestJson extends AndroidTestCase {
 				assertNotNull("Timeout", null);
 			}
 		}
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-
-		super.tearDown();
-
-		dataReadyListener = null;
-	}
-
-	public void testItemParsedCorrectly() {
+		
 		assertTrue(dataReadyListener.dataReadyForTest);
 		assertNotNull(dataReadyListener.items);
 		assertEquals("About Canada", dataReadyListener.title);
